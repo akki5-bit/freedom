@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Freedom">
+<!-- manifest disabled until file is uploaded -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Freedom Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0d1117;
+  --sidebar: #111820;
+  --surface: #161d27;
+  --surface2: #1c2535;
+  --surface3: #222d3d;
+  --accent: #f5a623;
+  --accent2: #10b981;
+  --accent3: #3b82f6;
+  --danger: #ef4444;
+  --purple: #a855f7;
+  --text: #e8edf5;
+  --muted: #5a6a82;
+  --muted2: #8899aa;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --sidebar-w: 220px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── AUTH PAGES ── */
+.auth-page {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at 60% 0%, #1a2a40 0%, #0d1117 65%);
+}
+.auth-page.active { display: flex; }
+
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 44px 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 0 80px rgba(245,166,35,0.07), 0 40px 80px rgba(0,0,0,0.4);
+}
+.auth-icon { font-size: 48px; margin-bottom: 14px; }
+.auth-card h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px; font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.brand-sub { font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 28px; }
+.input-wrap { margin-bottom: 14px; text-align: left; }
+.input-wrap label { font-size: 11px; color: var(--muted2); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 7px; }
+.input-rel { position: relative; }
+.input-rel input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 13px 44px 13px 16px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-rel input:focus { border-color: var(--accent); }
+.eye-btn {
+  position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+  cursor: pointer; font-size: 17px; user-select: none; opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.eye-btn:hover { opacity: 1; }
+.btn-main {
+  width: 100%; padding: 14px;
+  background: var(--accent); border: none; border-radius: 12px;
+  color: #0d0d0d; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Syne', sans-serif;
+  margin-top: 6px; letter-spacing: 0.5px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(245,166,35,0.25);
+}
+.btn-main:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.err-msg { color: var(--danger); font-size: 12px; margin-top: 8px; min-height: 18px; }
+
+/* ── APP SHELL ── */
+#appShell {
+  display: none;
+  min-height: 100vh;
+}
+#appShell.active { display: flex; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+.sidebar-brand {
+  padding: 0 20px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.brand-logo {
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-logo .flame { font-size: 24px; }
+.brand-logo .name {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+.brand-logo .tagline { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+.nav-label {
+  font-size: 9px; color: var(--muted); letter-spacing: 2px;
+  text-transform: uppercase; padding: 0 20px 8px; margin-top: 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; cursor: pointer;
+  border-left: 3px solid transparent;
+  color: var(--muted2); font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  user-select: none;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-item.active {
+  color: var(--accent); border-left-color: var(--accent);
+  background: rgba(245,166,35,0.07);
+}
+.nav-item .ni { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 16px 20px 0;
+  border-top: 1px solid var(--border);
+}
+.lock-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; border-radius: 10px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted2); font-size: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  width: 100%; transition: all 0.2s;
+}
+.lock-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── MAIN AREA ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 28px 0;
+  margin-bottom: 22px;
+}
+.topbar-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.topbar-title span { color: var(--accent2); }
+.topbar-meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.meta-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); display: inline-block; }
+.since-badge {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 11px; color: var(--muted2);
+  font-family: 'DM Mono', monospace;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 5px;
+}
+.since-badge:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── PAGE SECTIONS ── */
+.page-section { display: none; padding: 0 28px 40px; }
+.page-section.active { display: block; }
+
+/* ── STAT CARDS ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 2px;
+  border-radius: 0 0 16px 16px;
+}
+.stat-card.gold::after { background: linear-gradient(90deg, var(--accent), transparent); }
+.stat-card.green::after { background: linear-gradient(90deg, var(--accent2), transparent); }
+.stat-card.blue::after { background: linear-gradient(90deg, var(--accent3), transparent); }
+.stat-card.red::after { background: linear-gradient(90deg, var(--danger), transparent); }
+.stat-card.purple::after { background: linear-gradient(90deg, var(--purple), transparent); }
+.sc-label { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.sc-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.stat-card.gold .sc-val { color: var(--accent); }
+.stat-card.green .sc-val { color: var(--accent2); }
+.stat-card.blue .sc-val { color: var(--accent3); }
+.stat-card.red .sc-val { color: var(--danger); }
+.stat-card.purple .sc-val { color: var(--purple); }
+.sc-sub { font-size: 10px; color: var(--muted); }
+
+/* ── CHARTS GRID ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px 20px 16px;
+}
+.chart-card.full { grid-column: 1 / -1; }
+.cc-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.cc-title { font-size: 11px; color: var(--muted2); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+.cc-badge {
+  font-size: 10px; padding: 3px 10px; border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+}
+.cc-badge.green { background: rgba(16,185,129,0.15); color: var(--accent2); }
+.cc-badge.gold { background: rgba(245,166,35,0.15); color: var(--accent); }
+canvas { max-height: 200px !important; }
+
+/* ── TODAY PAGE ── */
+.today-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+}
+.check-big {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 36px 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.check-big::before {
+  content: '';
+  position: absolute; top: -60px; left: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(16,185,129,0.12), transparent 70%);
+  pointer-events: none;
+}
+.today-date-label {
+  font-size: 10px; color: var(--muted); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.today-question {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 700;
+  margin-bottom: 28px; line-height: 1.4;
+  letter-spacing: -0.3px;
+}
+.big-btn {
+  width: 120px; height: 120px;
+  border-radius: 30px;
+  border: 3px solid var(--accent2);
+  background: var(--surface2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 54px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+.big-btn:hover { transform: scale(1.06); box-shadow: 0 0 40px rgba(16,185,129,0.3); }
+.big-btn.checked { background: var(--accent2); border-color: var(--accent2); animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1); cursor: default; }
+.big-btn.missed { background: rgba(239,68,68,0.1); border-color: var(--danger); cursor: default; }
+@keyframes pop { 0%{transform:scale(0.8)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+.check-msg { font-size: 13px; color: var(--muted); }
+.check-msg.win { color: var(--accent2); font-weight: 600; }
+.check-msg.miss { color: var(--danger); }
+.miss-link {
+  margin-top: 18px;
+  background: transparent; border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 8px; color: var(--danger);
+  padding: 7px 16px; font-size: 11px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; opacity: 0.7; transition: all 0.2s;
+}
+.miss-link:hover { opacity: 1; background: rgba(239,68,68,0.08); }
+
+.today-side { display: flex; flex-direction: column; gap: 16px; }
+
+.streak-mini {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px 20px;
+}
+.sm-title { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+.sm-row { display: flex; justify-content: space-around; }
+.sm-item { text-align: center; }
+.sm-val { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+.sm-val.gold { color: var(--accent); }
+.sm-val.green { color: var(--accent2); }
+.sm-val.blue { color: var(--accent3); }
+.sm-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+.calendar-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px 20px;
+  flex: 1;
+}
+.cc-month { font-size: 10px; color: var(--muted2); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal-lbl { text-align: center; font-size: 8px; color: var(--muted); padding: 2px 0; }
+.cal-d {
+  aspect-ratio: 1; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 600;
+  background: var(--surface2); color: var(--muted);
+}
+.cal-d.win { background: rgba(16,185,129,0.2); color: var(--accent2); }
+.cal-d.loss { background: rgba(239,68,68,0.12); color: var(--danger); }
+.cal-d.today { border: 2px solid var(--accent); color: var(--accent); font-weight: 800; }
+.cal-d.empty { background: transparent; }
+
+/* ── STATS PAGE ── */
+.weekly-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.wt-title { font-size: 11px; color: var(--muted2); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; font-weight: 600; }
+.wt-row {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  gap: 8px; align-items: center;
+}
+.wt-label { font-size: 10px; color: var(--muted); }
+.wt-day { text-align: center; }
+.wt-day-name { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+.wt-dot {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; margin: 0 auto;
+  background: var(--surface2);
+}
+.wt-dot.win { background: rgba(16,185,129,0.2); }
+.wt-dot.miss { background: rgba(239,68,68,0.12); }
+
+.reminder-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+.rc-icon { font-size: 28px; }
+.rc-text .rct { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.rc-text .rcm { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+/* ── CONFETTI ── */
+#confettiCanvas {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events: none; z-index: 9999;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+
+/* ── HAMBURGER BUTTON ── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px; height: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.hamburger span {
+  display: block; width: 18px; height: 2px;
+  background: var(--text); border-radius: 2px;
+  transition: all 0.3s;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── OVERLAY ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 150;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.active { display: block; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--sidebar);
+  border-top: 1px solid var(--border2);
+  z-index: 100;
+  padding: 6px 0 8px;
+}
+.bottom-nav-inner {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.bn-item {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  padding: 5px 10px; cursor: pointer;
+  border-radius: 10px; min-width: 50px;
+  transition: background 0.15s;
+}
+.bn-item:active { background: rgba(255,255,255,0.06); }
+.bn-icon { font-size: 20px; }
+.bn-lbl { font-size: 9px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+.bn-item.active .bn-lbl { color: var(--accent); }
+.bn-item.active .bn-icon { filter: drop-shadow(0 0 5px rgba(245,166,35,0.7)); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 0px; }
+
+  .sidebar {
+    transform: translateX(-240px);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    z-index: 200;
+    width: 220px;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .hamburger { display: flex; }
+  .bottom-nav { display: block; }
+
+  .main { margin-left: 0; padding-bottom: 72px; }
+  .topbar { padding: 14px 14px 0; }
+  .page-section { padding-left: 14px; padding-right: 14px; }
+
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .charts-row { grid-template-columns: 1fr; }
+  .today-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .sc-val { font-size: 22px; }
+  .topbar-title { font-size: 17px; }
+  .since-badge { display: none; }
+  .wt-row { grid-template-columns: 55px repeat(7,1fr); gap: 4px; }
+  .wt-dot { width: 24px; height: 24px; font-size: 12px; }
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.stat-card, .chart-card, .check-big, .today-side > * {
+  animation: fadeUp 0.4s ease both;
+}
+.stat-card:nth-child(1){animation-delay:0.05s}
+.stat-card:nth-child(2){animation-delay:0.1s}
+.stat-card:nth-child(3){animation-delay:0.15s}
+.stat-card:nth-child(4){animation-delay:0.2s}
+.stat-card:nth-child(5){animation-delay:0.25s}
+</style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<!-- ── SETUP ── -->
+<div id="setupPage" class="auth-page active">
+  <div class="auth-card">
+    <div class="auth-icon">🔐</div>
+    <h1>Freedom Tracker</h1>
+    <div class="brand-sub">Your private journey</div>
+    <div class="input-wrap">
+      <label>Create Password</label>
+      <div class="input-rel">
+        <input type="password" id="setupPass" placeholder="Enter a password...">
+        <span class="eye-btn" onclick="togglePass('setupPass',this)">👁️</span>
+      </div>
+    </div>
+    <div class="input-wrap">
+      <label>Confirm Password</label>
+      <div class="input-rel">
+        <input type="password" id="setupConfirm" placeholder="Confirm password...">
+        <span class="eye-btn" onclick="togglePass('setupConfirm',this)">👁️</span>
+      </div>
+    </div>
+    <button class="btn-main" onclick="doSetup()">Begin My Journey →</button>
+    <div class="err-msg" id="setupErr"></div>
+  </div>
+</div>
+
+<!-- ── LOGIN ── -->
+<div id="loginPage" class="auth-page">
+  <div class="auth-card">
+    <div class="auth-icon">🛡️</div>
+    <h1>Welcome Back</h1>
+    <div class="brand-sub">Your progress is waiting</div>
+    <div class="input-wrap">
+      <label>Password</label>
+      <div class="input-rel">
+        <input type="password" id="loginPass" placeholder="Enter password..."
+               onkeydown="if(event.key==='Enter')doLogin()">
+        <span class="eye-btn" onclick="togglePass('loginPass',this)">👁️</span>
+      </div>
+    </div>
+    <button class="btn-main" onclick="doLogin()">Unlock →</button>
+    <div class="err-msg" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ── APP SHELL ── -->
+<div id="appShell">
+
+  <!-- OVERLAY (mobile sidebar backdrop) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <div class="bn-item active" id="bn-today" onclick="switchNavMobile('today',this)">
+        <div class="bn-icon">☀️</div>
+        <div class="bn-lbl">Today</div>
+      </div>
+      <div class="bn-item" id="bn-progress" onclick="switchNavMobile('progress',this)">
+        <div class="bn-icon">📈</div>
+        <div class="bn-lbl">Progress</div>
+      </div>
+      <div class="bn-item" id="bn-calendar" onclick="switchNavMobile('calendar',this)">
+        <div class="bn-icon">📅</div>
+        <div class="bn-lbl">Calendar</div>
+      </div>
+      <div class="bn-item" id="bn-stats" onclick="switchNavMobile('stats',this)">
+        <div class="bn-icon">📊</div>
+        <div class="bn-lbl">Stats</div>
+      </div>
+      <div class="bn-item" id="bn-settings" onclick="switchNavMobile('settings',this)">
+        <div class="bn-icon">⚙️</div>
+        <div class="bn-lbl">Settings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <span class="flame">🔥</span>
+        <div>
+          <div class="name">FREEDOM</div>
+          <div class="tagline">TRACKER</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-label">Navigation</div>
+    <div class="nav-item active" onclick="switchNav('today',this)">
+      <span class="ni">☀️</span> Today
+    </div>
+    <div class="nav-item" onclick="switchNav('progress',this)">
+      <span class="ni">📈</span> Progress
+    </div>
+    <div class="nav-item" onclick="switchNav('calendar',this)">
+      <span class="ni">📅</span> Calendar
+    </div>
+    <div class="nav-item" onclick="switchNav('stats',this)">
+      <span class="ni">📊</span> Stats
+    </div>
+    <div class="nav-item" onclick="switchNav('settings',this)">
+      <span class="ni">⚙️</span> Settings
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="lock-btn" onclick="doLogout()">🔒 Lock Tracker</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar" style="display:flex;align-items:center;gap:12px;">
+      <div class="hamburger" id="hamburger" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="topbar-title" id="pageTitle">Progress <span>↗</span></div>
+        <div class="topbar-meta" style="margin-top:3px;">
+          <span class="meta-dot"></span>
+          <span id="topbarSub">Track your journey to freedom</span>
+        </div>
+      </div>
+      <div class="since-badge" id="sinceBadge">
+        📅 Since <span id="sinceDate">—</span>
+      </div>
+    </div>
+
+    <!-- ── TODAY SECTION ── -->
+    <div id="sec-today" class="page-section active">
+      <div class="today-layout">
+        <div class="check-big">
+          <div class="today-date-label" id="todayLabel"></div>
+          <div class="today-question" id="todayQ">Did you stay strong today?</div>
+          <div class="big-btn" id="bigBtn" onclick="markWin()">
+            <span id="bigIcon">○</span>
+          </div>
+          <p class="check-msg" id="checkMsg">Tap to mark today as a WIN 💪</p>
+          <br>
+          <button class="miss-link" id="missLink" onclick="markMiss()">I missed today</button>
+        </div>
+
+        <div class="today-side">
+          <div class="streak-mini">
+            <div class="sm-title">Quick Stats</div>
+            <div class="sm-row">
+              <div class="sm-item">
+                <div class="sm-val gold" id="qs-streak">0</div>
+                <div class="sm-lbl">🔥 Streak</div>
+              </div>
+              <div class="sm-item">
+                <div class="sm-val green" id="qs-wins">0</div>
+                <div class="sm-lbl">✅ Wins</div>
+              </div>
+              <div class="sm-item">
+                <div class="sm-val blue" id="qs-days">0</div>
+                <div class="sm-lbl">📅 Days</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="calendar-card">
+            <div class="cc-month" id="calMonth"></div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROGRESS SECTION ── -->
+    <div id="sec-progress" class="page-section">
+      <div class="stats-grid">
+        <div class="stat-card gold">
+          <div class="sc-label">Current Streak</div>
+          <div class="sc-val" id="p-streak">0</div>
+          <div class="sc-sub" id="p-streak-sub">Keep going strong 🔥</div>
+        </div>
+        <div class="stat-card green">
+          <div class="sc-label">Wins</div>
+          <div class="sc-val" id="p-wins">0</div>
+          <div class="sc-sub">Total Wins</div>
+        </div>
+        <div class="stat-card red">
+          <div class="sc-label">Misses</div>
+          <div class="sc-val" id="p-miss">0</div>
+          <div class="sc-sub" id="p-miss-sub">You can do better!</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="sc-label">Days Tracked</div>
+          <div class="sc-val" id="p-days">0</div>
+          <div class="sc-sub">Keep showing up!</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="sc-label">Consistency Score</div>
+          <div class="sc-val" id="p-score">0%</div>
+          <div class="sc-sub">Great consistency 🎯</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="cc-head">
+            <span class="cc-title">Win Rate Over Time</span>
+            <span class="cc-badge gold" id="badge-winrate">—%</span>
+          </div>
+          <canvas id="chartWinRate"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="cc-head">
+            <span class="cc-title">Streak Over Time</span>
+            <span class="cc-badge green" id="badge-streak">— days</span>
+          </div>
+          <canvas id="chartStreak"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card full">
+        <div class="cc-head">
+          <span class="cc-title">Improvement vs Ideal Streak Path</span>
+          <span class="cc-badge gold">Your Path &nbsp;·&nbsp; <span style="opacity:0.6">····</span> Ideal Path (Perfect Streak)</span>
+        </div>
+        <canvas id="chartIdeal" style="max-height:180px!important;"></canvas>
+      </div>
+    </div>
+
+    <!-- ── CALENDAR SECTION ── -->
+    <div id="sec-calendar" class="page-section">
+      <div class="chart-card" style="border-radius:20px;">
+        <div class="cc-head">
+          <span class="cc-title" id="fullCalTitle"></span>
+          <span class="cc-badge green">This Month</span>
+        </div>
+        <div id="fullCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:4px;"></div>
+      </div>
+    </div>
+
+    <!-- ── STATS SECTION ── -->
+    <div id="sec-stats" class="page-section">
+      <div class="weekly-table">
+        <div class="wt-title">Weekly Summary (Last 7 Days)</div>
+        <div class="wt-row" id="weeklyRow"></div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="cc-head"><span class="cc-title">Last 30 Days</span></div>
+          <canvas id="chartBar"></canvas>
+        </div>
+        <div class="reminder-card" style="grid-column: unset;">
+          <div class="rc-icon">🔔</div>
+          <div class="rc-text">
+            <div class="rct">Reminders set for</div>
+            <div class="rcm">8:00 AM &amp; 9:00 PM — Daily</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS SECTION ── -->
+    <div id="sec-settings" class="page-section">
+      <div class="chart-card" style="max-width:440px;">
+        <div class="cc-head"><span class="cc-title">Account</span></div>
+        <div style="font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.7;">
+          Your data is stored locally and protected with your password.
+        </div>
+        <button class="btn-main" style="width:auto;padding:11px 24px;font-size:13px;" onclick="doLogout()">
+          🔒 Lock &amp; Log Out
+        </button>
+
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);">
+          <div class="cc-title" style="margin-bottom:12px;">🤖 Telegram Reminders</div>
+          <div id="tg-status-card" style="background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:12px;line-height:1.7;">
+            <span id="tg-status-icon">⏳</span>
+            <span id="tg-status-text" style="color:var(--muted2);">Checking connection...</span>
+          </div>
+          <button onclick="sendTelegramTest()" style="background:linear-gradient(135deg,#2AABEE,#1e96d4);border:none;color:white;border-radius:10px;padding:10px 18px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px;width:100%;justify-content:center;">
+            <span>✈️</span> Send Test Message on Telegram
+          </button>
+          <div style="font-size:10px;color:var(--muted);line-height:1.6;background:rgba(245,166,35,0.06);border-radius:8px;padding:10px 12px;">
+            🌅 <b style="color:var(--accent);">8:00 AM</b> — Morning reminder<br>
+            🌙 <b style="color:var(--accent);">9:00 PM</b> — Evening check-in<br>
+            <span style="opacity:0.7;">Works even when Chrome is closed ✅</span>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+          <button onclick="resetAll()" style="background:transparent;border:1px solid rgba(239,68,68,0.3);color:var(--danger);border-radius:10px;padding:9px 18px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">
+            🗑️ Reset All Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /appShell -->
+
+<script>
+/* ── STORAGE ── */
+const S = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+  del: k => localStorage.removeItem(k),
+};
+const KP = 'ft2_pass', KD = 'ft2_data', KS = 'ft2_since';
+
+let charts = {};
+
+/* ── HELPERS ── */
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+function dateKey(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+/* ── INIT ── */
+window.onload = () => {
+  if (!S.get(KP)) showAuth('setupPage');
+  else showAuth('loginPage');
+};
+
+function showAuth(id) {
+  document.getElementById('setupPage').classList.remove('active');
+  document.getElementById('loginPage').classList.remove('active');
+  document.getElementById('appShell').classList.remove('active');
+  document.getElementById(id).classList.add('active');
+}
+
+/* ── SETUP / LOGIN ── */
+function hashPass(p) {
+  // Simple but reliable hash - works with any characters
+  let h = 0;
+  for (let i = 0; i < p.length; i++) {
+    h = Math.imul(31, h) + p.charCodeAt(i) | 0;
+  }
+  return 'ft_' + Math.abs(h).toString(36) + p.length;
+}
+
+function doSetup() {
+  const p = document.getElementById('setupPass').value.trim();
+  const c = document.getElementById('setupConfirm').value.trim();
+  const err = document.getElementById('setupErr');
+  err.textContent = '';
+  if (p.length < 4) { err.textContent = 'Min 4 characters chahiye'; return; }
+  if (p !== c) { err.textContent = 'Passwords match nahi kar rahe'; return; }
+  try {
+    S.set(KP, hashPass(p));
+    S.set(KD, S.get(KD) || {});
+    S.set(KS, S.get(KS) || today());
+    openApp();
+  } catch(e) {
+    err.textContent = 'Error: ' + e.message;
+    console.error('[FT] Setup error:', e);
+  }
+}
+function doLogin() {
+  const p = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  if (hashPass(p) === S.get(KP)) { openApp(); }
+  else { err.textContent = 'Galat password. Dobara try karo.'; }
+}
+function doLogout() {
+  document.getElementById('appShell').classList.remove('active');
+  document.getElementById('loginPage').classList.add('active');
+  document.getElementById('loginPass').value = '';
+}
+function resetAll() {
+  if (!confirm('This will delete all your data permanently. Are you sure?')) return;
+  S.del(KP); S.del(KD); S.del(KS);
+  location.reload();
+}
+
+/* ── OPEN APP ── */
+function openApp() {
+  try {
+    document.getElementById('setupPage').classList.remove('active');
+    document.getElementById('loginPage').classList.remove('active');
+    document.getElementById('appShell').classList.add('active');
+    renderAll();
+    // Init after render so UI is ready
+    setTimeout(() => {
+      scheduleDailyReminder();
+      initTelegram();
+    }, 300);
+  } catch(e) {
+    console.error('[FT] openApp error:', e);
+    alert('Error opening app: ' + e.message);
+  }
+}
+
+/* ── NAV ── */
+function switchNav(section, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + section).classList.add('active');
+  // sync bottom nav
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  const bnEl = document.getElementById('bn-' + section);
+  if (bnEl) bnEl.classList.add('active');
+  closeSidebar();
+
+  const titles = {
+    today: ['Today ☀️', 'Mark your daily progress'],
+    progress: ['Progress ↗', 'Track your journey to freedom'],
+    calendar: ['Calendar 📅', 'Your monthly view'],
+    stats: ['Stats 📊', 'Weekly summary & analytics'],
+    settings: ['Settings ⚙️', 'Manage your account'],
+  };
+  document.getElementById('pageTitle').innerHTML = titles[section][0];
+  document.getElementById('topbarSub').textContent = titles[section][1];
+
+  if (section === 'progress') renderProgress();
+  if (section === 'calendar') renderFullCal();
+  if (section === 'stats') renderStats();
+  if (section === 'today') renderToday();
+  if (section === 'settings') updateTgStatus('ready');
+}
+
+/* ── RENDER ALL ── */
+function renderAll() {
+  const since = S.get(KS) || today();
+  const d = new Date(since);
+  document.getElementById('sinceDate').textContent =
+    d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  renderToday();
+}
+
+/* ── TODAY ── */
+function renderToday() {
+  const data = S.get(KD) || {};
+  const t = today();
+  document.getElementById('todayLabel').textContent =
+    new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }).toUpperCase();
+
+  // streak
+  let streak = 0, wins = 0;
+  const allKeys = Object.keys(data).sort();
+  for (let k of allKeys) if (data[k] === 'win') wins++;
+
+  let dd = new Date();
+  while (true) {
+    const dk = dateKey(dd);
+    if (data[dk] === 'win') { streak++; dd.setDate(dd.getDate()-1); }
+    else break;
+  }
+
+  document.getElementById('qs-streak').textContent = streak;
+  document.getElementById('qs-wins').textContent = wins;
+  document.getElementById('qs-days').textContent = allKeys.length;
+
+  // check state
+  const st = data[t];
+  const btn = document.getElementById('bigBtn');
+  const icon = document.getElementById('bigIcon');
+  const msg = document.getElementById('checkMsg');
+  const ml = document.getElementById('missLink');
+  const q = document.getElementById('todayQ');
+
+  if (st === 'win') {
+    btn.className = 'big-btn checked'; icon.textContent = '✓';
+    msg.className = 'check-msg win'; msg.textContent = 'You crushed it today! 🎉';
+    q.textContent = "Today's done — you WON! 💪";
+    ml.style.display = 'none'; btn.onclick = null;
+  } else if (st === 'miss') {
+    btn.className = 'big-btn missed'; icon.textContent = '✗';
+    msg.className = 'check-msg miss'; msg.textContent = "It's okay. Get back up tomorrow. 🌅";
+    q.textContent = "You missed today — but tomorrow counts.";
+    ml.style.display = 'none'; btn.onclick = null;
+  } else {
+    btn.className = 'big-btn'; icon.textContent = '○';
+    msg.className = 'check-msg'; msg.textContent = 'Tap to mark today as a WIN 💪';
+    q.textContent = 'Did you stay strong today?';
+    ml.style.display = ''; btn.onclick = markWin;
+  }
+
+  renderCal(data);
+}
+
+function markWin() {
+  const data = S.get(KD) || {};
+  const t = today();
+  if (data[t]) return;
+  data[t] = 'win'; S.set(KD, data);
+  renderToday(); launchConfetti();
+}
+function markMiss() {
+  const data = S.get(KD) || {};
+  const t = today();
+  if (data[t]) return;
+  if (!confirm("Mark today as missed?")) return;
+  data[t] = 'miss'; S.set(KD, data);
+  renderToday();
+}
+
+/* ── MINI CALENDAR ── */
+function renderCal(data) {
+  const now = new Date();
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const month = now.getMonth(), year = now.getFullYear();
+  const todayStr = today();
+  document.getElementById('calMonth').textContent =
+    now.toLocaleDateString('en-US', { month:'long', year:'numeric' }).toUpperCase();
+
+  ['S','M','T','W','T','F','S'].forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-lbl'; el.textContent = d; grid.appendChild(el);
+  });
+
+  const first = new Date(year, month, 1).getDay();
+  const days = new Date(year, month+1, 0).getDate();
+  for (let i=0;i<first;i++) { const e=document.createElement('div'); e.className='cal-d empty'; grid.appendChild(e); }
+  for (let d=1;d<=days;d++) {
+    const dk = `${year}-${pad(month+1)}-${pad(d)}`;
+    const el = document.createElement('div');
+    el.className = 'cal-d'; el.textContent = d;
+    if (data[dk]==='win') el.classList.add('win');
+    else if (data[dk]==='miss') el.classList.add('loss');
+    if (dk===todayStr) el.classList.add('today');
+    grid.appendChild(el);
+  }
+}
+
+/* ── FULL CALENDAR ── */
+function renderFullCal() {
+  const data = S.get(KD) || {};
+  const now = new Date();
+  const month = now.getMonth(), year = now.getFullYear();
+  const todayStr = today();
+  const grid = document.getElementById('fullCalGrid');
+  grid.innerHTML = '';
+  document.getElementById('fullCalTitle').textContent =
+    now.toLocaleDateString('en-US',{month:'long',year:'numeric'}).toUpperCase();
+
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+    const el = document.createElement('div');
+    el.style.cssText = 'font-size:9px;color:var(--muted);text-align:center;padding:4px 0;letter-spacing:1px;';
+    el.textContent = d; grid.appendChild(el);
+  });
+
+  const first = new Date(year, month, 1).getDay();
+  const days = new Date(year, month+1, 0).getDate();
+  for (let i=0;i<first;i++) {
+    const e=document.createElement('div');
+    e.style.cssText='aspect-ratio:1;background:transparent;'; grid.appendChild(e);
+  }
+  for (let d=1;d<=days;d++) {
+    const dk = `${year}-${pad(month+1)}-${pad(d)}`;
+    const el = document.createElement('div');
+    el.style.cssText = `
+      aspect-ratio:1;border-radius:12px;display:flex;align-items:center;
+      justify-content:center;font-size:13px;font-weight:600;
+      background:var(--surface2);color:var(--muted);transition:transform 0.15s;
+    `;
+    el.textContent = d;
+    if (data[dk]==='win') el.style.cssText += 'background:rgba(16,185,129,0.2);color:#10b981;border:1px solid rgba(16,185,129,0.3);';
+    else if (data[dk]==='miss') el.style.cssText += 'background:rgba(239,68,68,0.12);color:#ef4444;';
+    if (dk===todayStr) el.style.cssText += 'border:2px solid var(--accent);color:var(--accent);';
+    grid.appendChild(el);
+  }
+}
+
+/* ── PROGRESS CHARTS ── */
+function calcStats(data) {
+  const keys = Object.keys(data).sort();
+  let wins = 0, losses = 0, best = 0, cur = 0, streak = 0;
+  keys.forEach(k => {
+    if (data[k]==='win') { wins++; cur++; best=Math.max(best,cur); }
+    else { losses++; cur=0; }
+  });
+  // current streak from today
+  let dd = new Date();
+  while (true) {
+    const dk = dateKey(dd);
+    if (data[dk]==='win') { streak++; dd.setDate(dd.getDate()-1); }
+    else break;
+  }
+  const score = keys.length ? Math.round((wins/keys.length)*100) : 0;
+  return { wins, losses, best, streak, score, total: keys.length };
+}
+
+function renderProgress() {
+  const data = S.get(KD) || {};
+  const st = calcStats(data);
+
+  document.getElementById('p-streak').textContent = st.streak;
+  document.getElementById('p-wins').textContent = st.wins;
+  document.getElementById('p-miss').textContent = st.losses;
+  document.getElementById('p-days').textContent = st.total;
+  document.getElementById('p-score').textContent = st.score + '%';
+  document.getElementById('p-streak-sub').textContent = st.streak > 0 ? `${st.streak} day${st.streak>1?'s':''} strong 🔥` : 'Start your streak!';
+
+  renderWinRateChart(data);
+  renderStreakChart(data);
+  renderIdealChart(data);
+
+  document.getElementById('badge-winrate').textContent = st.score + '%';
+  document.getElementById('badge-streak').textContent = st.best + ' days best';
+}
+
+function renderWinRateChart(data) {
+  const keys = Object.keys(data).sort();
+  const labels = [], rates = [];
+  let wins = 0;
+  keys.forEach((k,i) => {
+    if (data[k]==='win') wins++;
+    rates.push(Math.round((wins/(i+1))*100));
+    labels.push(k.slice(5));
+  });
+  if (charts.wr) charts.wr.destroy();
+  charts.wr = new Chart(document.getElementById('chartWinRate'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Win Rate %',
+        data: rates,
+        borderColor: '#f5a623',
+        backgroundColor: 'rgba(245,166,35,0.08)',
+        fill: true, tension: 0.4,
+        pointRadius: 3, pointBackgroundColor: '#f5a623',
+        borderWidth: 2,
+      }]
+    },
+    options: chartOpts({ yCallback: v => v+'%', max: 100, min: 0 })
+  });
+}
+
+function renderStreakChart(data) {
+  const keys = Object.keys(data).sort();
+  const labels = [], streaks = [];
+  let cur = 0;
+  keys.forEach(k => {
+    if (data[k]==='win') cur++; else cur=0;
+    streaks.push(cur); labels.push(k.slice(5));
+  });
+  if (charts.sk) charts.sk.destroy();
+  charts.sk = new Chart(document.getElementById('chartStreak'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Streak',
+        data: streaks,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.08)',
+        fill: true, tension: 0.4,
+        pointRadius: 3, pointBackgroundColor: '#10b981',
+        borderWidth: 2,
+      }]
+    },
+    options: chartOpts({ beginAtZero: true })
+  });
+}
+
+function renderIdealChart(data) {
+  const keys = Object.keys(data).sort();
+  const labels = [], actual = [], ideal = [];
+  let cur = 0;
+  keys.forEach((k,i) => {
+    if (data[k]==='win') cur++; else cur=0;
+    actual.push(cur);
+    ideal.push(i+1);
+    labels.push(k.slice(5));
+  });
+  if (charts.id) charts.id.destroy();
+  charts.id = new Chart(document.getElementById('chartIdeal'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Your Path',
+          data: actual,
+          borderColor: '#f5a623',
+          backgroundColor: 'rgba(245,166,35,0.07)',
+          fill: true, tension: 0.4,
+          pointRadius: 3, pointBackgroundColor: '#f5a623', borderWidth: 2,
+        },
+        {
+          label: 'Ideal Path (Perfect Streak)',
+          data: ideal,
+          borderColor: 'rgba(99,179,237,0.85)',
+          backgroundColor: 'transparent',
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          borderWidth: 2.5,
+          borderCapStyle: 'round',
+        }
+      ]
+    },
+    options: chartOpts({ beginAtZero: true })
+  });
+}
+
+/* ── STATS SECTION ── */
+function renderStats() {
+  renderBarChart();
+  renderWeeklySummary();
+}
+
+function renderBarChart() {
+  const data = S.get(KD) || {};
+  const labels = [], winData = [], lossData = [];
+  const now = new Date();
+  for (let i=29;i>=0;i--) {
+    const d = new Date(now); d.setDate(now.getDate()-i);
+    const dk = dateKey(d);
+    labels.push(d.getDate());
+    winData.push(data[dk]==='win' ? 1 : 0);
+    lossData.push(data[dk]==='miss' ? 1 : 0);
+  }
+  if (charts.bar) charts.bar.destroy();
+  charts.bar = new Chart(document.getElementById('chartBar'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Win', data: winData, backgroundColor: 'rgba(16,185,129,0.65)', borderRadius: 4 },
+        { label: 'Missed', data: lossData, backgroundColor: 'rgba(239,68,68,0.45)', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#8899aa', font: { size: 10 } } } },
+      scales: {
+        x: { ticks: { color: '#5a6a82', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#5a6a82', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.04)' }, max: 1 }
+      }
+    }
+  });
+}
+
+function renderWeeklySummary() {
+  const data = S.get(KD) || {};
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const now = new Date();
+  const row = document.getElementById('weeklyRow');
+  row.innerHTML = '';
+
+  // label col
+  const lbl = document.createElement('div');
+  lbl.className = 'wt-label';
+  lbl.innerHTML = `<div style="font-size:10px;color:var(--muted);">This week:</div><div id="weekSummaryText" style="font-size:11px;color:var(--accent2);margin-top:4px;"></div>`;
+  row.appendChild(lbl);
+
+  let wWins = 0, wMiss = 0;
+  for (let i=6;i>=0;i--) {
+    const d = new Date(now); d.setDate(now.getDate()-i);
+    const dk = dateKey(d);
+    const st = data[dk];
+    if (st==='win') wWins++;
+    else if (st==='miss') wMiss++;
+
+    const col = document.createElement('div');
+    col.className = 'wt-day';
+    col.innerHTML = `
+      <div class="wt-day-name">${days[d.getDay()]}</div>
+      <div class="wt-dot ${st||''}">
+        ${st==='win'?'✅':st==='miss'?'❌':'·'}
+      </div>
+    `;
+    row.appendChild(col);
+  }
+  setTimeout(() => {
+    const el = document.getElementById('weekSummaryText');
+    if (el) el.textContent = `${wWins} wins, ${wMiss} miss${wMiss!==1?'es':''} — ${wWins>=5?'improving 🔥':wWins>=3?'keep going 💪':'more effort needed 📌'}`;
+  }, 10);
+}
+
+/* ── CHART OPTIONS HELPER ── */
+function chartOpts({ yCallback, max, min, beginAtZero } = {}) {
+  return {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#8899aa', font: { size: 10 } } } },
+    scales: {
+      x: {
+        ticks: { color: '#5a6a82', font: { size: 9 }, maxTicksLimit: 8 },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      y: {
+        ticks: { color: '#5a6a82', callback: yCallback || undefined },
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        ...(max !== undefined ? { max } : {}),
+        ...(min !== undefined ? { min } : {}),
+        ...(beginAtZero ? { beginAtZero: true } : {}),
+      }
+    }
+  };
+}
+
+/* ── CONFETTI ── */
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const pieces = Array.from({length:130}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*-canvas.height,
+    r: Math.random()*8+3,
+    color: ['#f5a623','#10b981','#3b82f6','#ec4899','#a855f7','#ef4444'][Math.floor(Math.random()*6)],
+    vx: (Math.random()-.5)*4, vy: Math.random()*4+2,
+    rot: Math.random()*360, rotV: (Math.random()-.5)*8,
+  }));
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p => {
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.6);
+      ctx.restore();
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.rotV; p.vy+=0.05;
+    });
+    frame++;
+    if (frame<180) requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
+
+/* ── REMINDERS ── */
+/* ── SW REGISTRATION ── */
+let swReg = null;
+
+async function registerSW() {
+  // SW disabled - using Telegram for notifications instead
+  return;
+}
+
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return 'unsupported';
+  if (Notification.permission === 'granted') return 'granted';
+  const result = await Notification.requestPermission();
+  return result;
+}
+
+function scheduleDailyReminder() {
+  registerSW().then(() => {
+    requestNotificationPermission().then(perm => {
+      if (perm !== 'granted') {
+        console.log('[FT] Notification permission:', perm);
+        return;
+      }
+      scheduleNext(8,  0,  '🌅 Good Morning!',  "Did you stay strong yesterday? Mark today's progress.");
+      scheduleNext(21, 0,  '🌙 Evening Check-in', "Don't forget to mark today. Keep your streak alive! 🔥");
+    });
+  });
+}
+
+function scheduleNext(hour, minute, title, body) {
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hour, minute, 0, 0);
+  if (now >= target) target.setDate(target.getDate() + 1);
+  const delay = target - now;
+  const hStr = String(hour).padStart(2,'0') + ':' + String(minute).padStart(2,'0');
+  console.log(`[FT] Next notification at ${hStr} — in ${Math.round(delay/60000)} min`);
+
+  setTimeout(async () => {
+    await fireNotification(title, body, 'ft-' + hour);
+    // Repeat every 24h
+    setInterval(() => fireNotification(title, body, 'ft-' + hour), 86400000);
+  }, delay);
+}
+
+async function fireNotification(title, body, tag) {
+  // Prefer SW notification (works even when tab is in background)
+  if (swReg && Notification.permission === 'granted') {
+    try {
+      await swReg.showNotification(title, {
+        body,
+        icon: './icon-192.png',
+        badge: './icon-192.png',
+        vibrate: [200, 100, 200],
+        tag,
+        renotify: true,
+      });
+      return;
+    } catch(e) { /* fallback below */ }
+  }
+  // Fallback: plain Notification API
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, tag });
+  }
+}
+
+/* ══════════════════════════════════════
+   TELEGRAM NOTIFICATION SYSTEM
+   ══════════════════════════════════════ */
+
+// Token safely hidden in Cloudflare Worker — not exposed here
+const WORKER_URL = 'https://freedom-notify.pal229467.workers.dev/';
+
+async function sendTelegram(text) {
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const json = await res.json();
+    if (!json.ok) {
+      console.error('[FT] Worker error:', json.description || json.error);
+    }
+    return json.ok === true;
+  } catch (e) {
+    console.error('[FT] Worker fetch error:', e);
+    return false;
+  }
+}
+
+async function sendTelegramTest() {
+  updateTgStatus('sending');
+  const data = S.get(KD) || {};
+  const st = calcStats(data);
+  const t = today();
+  const todayStatus = data[t];
+  const statusLine = todayStatus === 'win'
+    ? '✅ Aaj ka din mark ho gaya — <b>WIN!</b>'
+    : todayStatus === 'miss'
+    ? '❌ Aaj miss hua — kal phir koshish karo'
+    : '⏳ Aaj abhi mark nahi kiya — app kholo!';
+
+  // Plain text message - no HTML tags
+  const cleanStatus = todayStatus === 'win'
+    ? 'Aaj ka din mark ho gaya — WIN!'
+    : todayStatus === 'miss'
+    ? 'Aaj miss hua — kal phir koshish karo'
+    : 'Aaj abhi mark nahi kiya — app kholo!';
+
+  const msg =
+`🔥 Freedom Tracker — Test Message
+
+${cleanStatus}
+
+📊 Stats:
+🔥 Streak: ${st.streak} din
+✅ Total Wins: ${st.wins}
+📊 Consistency: ${st.score}%
+
+Agar ye message aaya toh Telegram reminders kaam karenge!`;
+
+  const ok = await sendTelegram(msg);
+  if (ok) {
+    updateTgStatus('connected');
+  } else {
+    updateTgStatus('error');
+  }
+}
+
+function updateTgStatus(state) {
+  const icon = document.getElementById('tg-status-icon');
+  const text = document.getElementById('tg-status-text');
+  if (!icon || !text) return;
+  if (state === 'connected') {
+    icon.textContent = '✅';
+    text.innerHTML = '<span style="color:#10b981;font-weight:600;">Connected!</span> Telegram pe message bhej diya gaya.';
+  } else if (state === 'sending') {
+    icon.textContent = '⏳';
+    text.innerHTML = '<span style="color:#f5a623;">Bhej raha hoon...</span>';
+  } else if (state === 'error') {
+    icon.textContent = '❌';
+    text.innerHTML = '<span style="color:#ef4444;">Error!</span> Check karo internet connection ya token.';
+  } else {
+    icon.textContent = '🤖';
+    text.innerHTML = '<span style="color:#8899aa;">Telegram bot ready hai. Test karo neeche se.</span>';
+  }
+}
+
+/* ── TELEGRAM DAILY SCHEDULE ── */
+function scheduleTelegramReminders() {
+  scheduleTgAt(8,  0,  buildMorningMsg);
+  scheduleTgAt(21, 0,  buildEveningMsg);
+}
+
+function scheduleTgAt(hour, minute, msgFn) {
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hour, minute, 0, 0);
+  if (now >= target) target.setDate(target.getDate() + 1);
+  const delay = target - now;
+  console.log(`[FT Telegram] Next msg at ${hour}:${String(minute).padStart(2,'0')} — in ${Math.round(delay/60000)} min`);
+  setTimeout(async () => {
+    await sendTelegram(msgFn());
+    setInterval(async () => {
+      await sendTelegram(msgFn());
+    }, 86400000);
+  }, delay);
+}
+
+function buildMorningMsg() {
+  const data = S.get(KD) || {};
+  const st = calcStats(data);
+  return `🌅 Good Morning! Freedom Tracker
+
+Naya din, nayi opportunity! 💪
+
+🔥 Current Streak: ${st.streak} din
+✅ Total Wins: ${st.wins}
+📊 Consistency: ${st.score}%
+
+Aaj bhi strong rehna hai! Din ke end mein mark karna mat bhoolna. 🎯
+👉 akki5-bit.github.io/freedom/`;
+}
+
+function buildEveningMsg() {
+  const data = S.get(KD) || {};
+  const st = calcStats(data);
+  const t = today();
+  const todayDone = data[t];
+  if (todayDone === 'win') {
+    return `🌙 Evening Check-in — Freedom Tracker
+
+✅ Aaj mark kar diya — GREAT JOB!
+
+🔥 Streak: ${st.streak} din — Keep going!
+Kal bhi itna hi strong rehna. 💪`;
+  }
+  return `🌙 Evening Reminder — Freedom Tracker
+
+⚠️ Aaj abhi mark nahi kiya!
+
+App kholo aur aaj ka result mark karo:
+👉 akki5-bit.github.io/freedom/
+
+🔥 Streak: ${st.streak} din — Tutne mat dena!`;
+}
+
+/* ── INIT TELEGRAM ON APP OPEN ── */
+function initTelegram() {
+  updateTgStatus('ready');
+  scheduleTelegramReminders();
+}
+
+/* ── TEST NOTIFICATION (browser fallback) ── */
+async function testNotification() {
+  sendTelegramTest();
+}
+
+/* ── PASSWORD TOGGLE ── */
+function togglePass(id, el) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  if (inp.type==='password') { inp.type='text'; el.textContent='🙈'; }
+  else { inp.type='password'; el.textContent='👁️'; }
+}
+
+/* ── MOBILE NAV ── */
+function toggleSidebar() {
+  const sb = document.getElementById('appShell').querySelector('.sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  const hb = document.getElementById('hamburger');
+  const isOpen = sb.classList.contains('open');
+  if (isOpen) { sb.classList.remove('open'); ov.classList.remove('active'); hb.classList.remove('open'); }
+  else { sb.classList.add('open'); ov.classList.add('active'); hb.classList.add('open'); }
+}
+
+function closeSidebar() {
+  const sb = document.getElementById('appShell').querySelector('.sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  const hb = document.getElementById('hamburger');
+  sb.classList.remove('open');
+  ov.classList.remove('active');
+  hb.classList.remove('open');
+}
+
+function switchNavMobile(section, el) {
+  // sync bottom nav active state
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // sync sidebar active state
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.textContent.trim().toLowerCase().includes(section));
+  });
+  closeSidebar();
+  // reuse existing switchNav logic (pass a dummy el since we already synced)
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + section).classList.add('active');
+  const titles = {
+    today: ['Today ☀️', 'Mark your daily progress'],
+    progress: ['Progress ↗', 'Track your journey to freedom'],
+    calendar: ['Calendar 📅', 'Your monthly view'],
+    stats: ['Stats 📊', 'Weekly summary & analytics'],
+    settings: ['Settings ⚙️', 'Manage your account'],
+  };
+  document.getElementById('pageTitle').innerHTML = titles[section][0];
+  document.getElementById('topbarSub').textContent = titles[section][1];
+  if (section === 'progress') renderProgress();
+  if (section === 'calendar') renderFullCal();
+  if (section === 'stats') renderStats();
+  if (section === 'today') renderToday();
+  if (section === 'settings') updateTgStatus('ready');
+}
+</script>
+</body>
+</html>
